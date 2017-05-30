@@ -5,11 +5,18 @@ import csv
 import random
 
 # uncomment the environment you want to create users in
-ENV = "https://devext.arcgis.com"  # DEV
-# ENV = "https://qaext.arcgis.com" # QA
 
+# DEV
+# ENV = "https://devext.arcgis.com"
+# gis = GIS(url=ENV, username=os.environ['COMM_ORG_USER_DEV'], password=os.environ['COMM_ORG_PWORD_DEV'])
 
-gis = GIS(url=ENV, username=os.environ['COMM_ORG_USER'], password=os.environ['COMM_ORG_PWORD'])
+# # QA
+ENV = "https://qaext.arcgis.com"
+gis = GIS(url=ENV, username=os.environ['COMM_ORG_USER_QA'], password=os.environ['COMM_ORG_PWORD_QA'])
+
+# PROD
+# ENV = "https://flying5123.maps.arcgis.com"
+# gis = GIS(url=ENV, username=os.environ['COMM_ORG_USER_PROD'], password=os.environ['COMM_ORG_PWORD_PROD'])
 
 
 def destroy_user(username):
@@ -19,10 +26,10 @@ def destroy_user(username):
 
 
 def create_username(fname, lname):
-    username = fname + lname + '_QAdummy'
+    username = fname + lname + '_qa_mock_acct'
 
     if gis.users.get(username):
-        username = fname + lname + '_QAdummy' + str(random.randint(999, 9999))
+        username = fname + lname + '_qa_mock_acct' + str(random.randint(999, 9999))
     else:
         pass
     return username
@@ -51,7 +58,7 @@ def destroy_dummy_group_members(num_to_destroy):
         if num_to_destroy == 'all':
             holding_group = myGroup
         for member in holding_group:
-            if member[-8:] == '_QAdummy' or member[-12:-4] == '_QAdummy':
+            if member[-13:] == '_qa_mock_acct' or member[-18:-4] == '_qa_mock_acct':
                 x = gis.users.get(member)
                 x.delete()
                 print('{}. {} destroyed'.format(count + 1, member))
@@ -73,16 +80,18 @@ if args.count:
         random.shuffle(nameReader)  # commment out this line to generate users as they appear in the csv
         count = 0
         listOfUsernames = []
+        listOfFakeEmailHosts = ['@tmail.com', '@bahoo.com', '@coldmail.com', '@inlook.com', '@footbook.com']
 
         for item in nameReader:
             dummy_username = create_username(item[0], item[1])
+            dummy_email = '{}{}'.format(dummy_username.rstrip('_qa_mock_acct'), random.choice(listOfFakeEmailHosts))
 
             try:
                 new_dummy = gis.users.create(username=dummy_username,
-                                             password='dummyPassword1',
+                                             password='qamockacct1',
                                              firstname=item[0],
                                              lastname=item[1],
-                                             email='dummy@dummy.com',
+                                             email=dummy_email,
                                              description='test account created using a script for QA purposes',
                                              role='org_user',
                                              provider='arcgis',
