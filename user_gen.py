@@ -93,13 +93,15 @@ if args.count:
                                              lastname=item[1],
                                              email=dummy_email,
                                              description='test account created using a script for QA purposes',
-                                             role='org_user',
+                                             role='Participant',
                                              provider='arcgis',
-                                             level=2
+                                             level=2,
                                              )
             except:
                 pass
 
+            new_dummy.update(access='public')
+            # new_dummy.update_role(custom='Participant')
             listOfUsernames.append(new_dummy.username)
             print('{}. Created {}'.format(count + 1, new_dummy.username))
             count += 1
