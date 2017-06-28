@@ -11,12 +11,16 @@ import random
 # gis = GIS(url=ENV, username=os.environ['COMM_ORG_USER_DEV'], password=os.environ['COMM_ORG_PWORD_DEV'])
 
 # # QA
-ENV = "https://qaext.arcgis.com"
-gis = GIS(url=ENV, username=os.environ['COMM_ORG_USER_QA'], password=os.environ['COMM_ORG_PWORD_QA'])
+# ENV = "https://qaext.arcgis.com"
+# gis = GIS(url=ENV, username=os.environ['COMM_ORG_USER_QA'], password=os.environ['COMM_ORG_PWORD_QA'])
 
 # PROD
 # ENV = "https://flying5123.maps.arcgis.com"
 # gis = GIS(url=ENV, username=os.environ['COMM_ORG_USER_PROD'], password=os.environ['COMM_ORG_PWORD_PROD'])
+
+# City of X
+ENV = "https://cityxcommunity.maps.arcgis.com/"
+gis = GIS(url=ENV, username=os.environ['COMM_ORG_USER_CX'], password=os.environ['COMM_ORG_PWORD_CX'])
 
 
 def destroy_user(username):
@@ -26,10 +30,10 @@ def destroy_user(username):
 
 
 def create_username(fname, lname):
-    username = fname + lname + '_qa_mock_acct'
+    username = fname + lname
 
     if gis.users.get(username):
-        username = fname + lname + '_qa_mock_acct' + str(random.randint(999, 9999))
+        username = fname + lname + str(random.randint(999, 9999))
     else:
         pass
     return username
@@ -58,11 +62,10 @@ def destroy_dummy_group_members(num_to_destroy):
         if num_to_destroy == 'all':
             holding_group = myGroup
         for member in holding_group:
-            if member[-13:] == '_qa_mock_acct' or member[-18:-4] == '_qa_mock_acct':
-                x = gis.users.get(member)
-                x.delete()
-                print('{}. {} destroyed'.format(count + 1, member))
-                count += 1
+            x = gis.users.get(member)
+            x.delete()
+            print('{}. {} destroyed'.format(count + 1, member))
+            count += 1
     except Exception as e:
         print(e)
     return
@@ -71,6 +74,7 @@ def destroy_dummy_group_members(num_to_destroy):
 parser = argparse.ArgumentParser()
 parser.add_argument("-c", "--count", type=int, help="the number of users you want to generate")
 parser.add_argument("-d", "--destroy", type=str, help="destroy the previously created group")
+parser.add_argument("-e", "--environment", type=str, help="the environment you want to use")
 args = parser.parse_args()
 
 if args.count:
@@ -84,7 +88,7 @@ if args.count:
 
         for item in nameReader:
             dummy_username = create_username(item[0], item[1])
-            dummy_email = '{}{}'.format(dummy_username.rstrip('_qa_mock_acct'), random.choice(listOfFakeEmailHosts))
+            dummy_email = '{}{}'.format(dummy_username, random.choice(listOfFakeEmailHosts))
 
             try:
                 new_dummy = gis.users.create(username=dummy_username,
@@ -100,8 +104,8 @@ if args.count:
             except:
                 pass
 
+            new_dummy.update(tags='hubRole|participant')
             new_dummy.update(access='public')
-            # new_dummy.update_role(custom='Participant')
             listOfUsernames.append(new_dummy.username)
             print('{}. Created {}'.format(count + 1, new_dummy.username))
             count += 1
